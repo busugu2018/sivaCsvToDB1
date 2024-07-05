@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="12d75fdf-9bd5-4b8c-80b3-c03024e31956" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="csvtodb1Flow" doc:id="d36a6e88-c361-4dcc-a04f-968b07ace30c" >
+		<http:listener doc:name="Listener" doc:id="5467401b-0936-459b-bc12-839a4aed1213" config-ref="HTTP_Listener_config" path="/csvToDB1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="c7ae2304-da3c-4b92-a677-9cdba2b6a28c" message="Input CSV = #[payload]"/>
+		<ee:transform doc:name="Transform Message" doc:id="b8f6bce2-f78e-4b28-9137-327beee95116" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload map {
+	firstname: $.firstname,
+	lastName: $.lastName,
+	accountName: $.accountName,
+	email: $.email,
+	phone: $.phone
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<foreach doc:name="For Each" doc:id="29be853d-bdaf-4de2-bed2-d0f56c14b640" >
+			<logger level="INFO" doc:name="Logger" doc:id="f48a7c44-34ab-4836-88cc-dbac5bb57a8d" message="The current record is: #[payload]"/>
+			<db:insert doc:name="Insert" doc:id="9c5c7f78-4027-41f7-9c92-9f5e8115a43d" />
+		</foreach>
+	</flow>
+</mule>
